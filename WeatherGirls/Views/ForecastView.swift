@@ -8,11 +8,28 @@
 import SwiftUI
 
 struct ForecastView: View {
+    @State var forecast: WeatherDataModel
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack {
+            VStack(alignment: .leading) {
+                Text(forecast.day)
+                Text(forecast.displayTemperature)
+            }
+            .padding(.bottom, 2)
+            Image(systemName: forecast.icon)
+                .font(.largeTitle)
+                .padding(.init(top: 2, leading: 0, bottom: 2, trailing: 0))
+        }
     }
 }
 
 #Preview {
-    ForecastView()
+    ForecastView(
+        forecast: WeatherDataModel(
+            day: "Monday",
+            temperature: "28",
+            icon: "cloud.fill",
+            isFahrenheit: false
+        )
+    )
 }

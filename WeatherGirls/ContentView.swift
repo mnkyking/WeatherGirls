@@ -15,32 +15,23 @@ struct ContentView: View {
         sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
         animation: .default)
     private var items: FetchedResults<Item>
+    
+    @State var weatherData: [WeatherDataModel]
 
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
-                    }
+        ZStack {
+            Image(systemName: "sun.max.circle")
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(.tertiary, .secondary, .quaternary)
+                .font(.system(size: 100))
+            VStack(alignment: .leading) {
+                Spacer()
+                VStack {
+                    ForecastView(forecast: weatherData[0])
                 }
-                .onDelete(perform: deleteItems)
+                FourDayView(forecasts: weatherData)
             }
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-            Text("Select an item")
+            .padding(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
         }
     }
 
@@ -84,5 +75,39 @@ private let itemFormatter: DateFormatter = {
 }()
 
 #Preview {
-    ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+    ContentView(
+        weatherData:
+            [
+                WeatherDataModel(
+                    day: "Mon",
+                    temperature: "28",
+                    icon: "cloud.fill",
+                    isFahrenheit: false
+                ),
+                WeatherDataModel(
+                    day: "Tue",
+                    temperature: "28",
+                    icon: "cloud.rain.fill",
+                    isFahrenheit: false
+                ),
+                WeatherDataModel(
+                    day: "Wed",
+                    temperature: "28",
+                    icon: "sun.max.fill",
+                    isFahrenheit: false
+                ),
+                WeatherDataModel(
+                    day: "Thu",
+                    temperature: "28",
+                    icon: "cloud.fill",
+                    isFahrenheit: false
+                ),
+                WeatherDataModel(
+                    day: "Fri",
+                    temperature: "28",
+                    icon: "cloud.fill",
+                    isFahrenheit: false
+                )
+            ]
+    ).environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 }
