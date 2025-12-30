@@ -1,0 +1,7 @@
+[
+  { "day": "Mon", "temperature": "72", "icon": "sun.max.fill", "isFahrenheit": true },
+  { "day": "Tue", "temperature": "68", "icon": "cloud.fill", "isFahrenheit": true },
+  { "day": "Wed", "temperature": "65", "icon": "cloud.rain.fill", "isFahrenheit": true },
+  { "day": "Thu", "temperature": "70", "icon": "cloud.sun.fill", "isFahrenheit": true },
+  { "day": "Fri", "temperature": "66", "icon": "wind", "isFahrenheit": true }
+]

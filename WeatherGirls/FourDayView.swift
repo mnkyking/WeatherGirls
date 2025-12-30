@@ -2,56 +2,34 @@ import SwiftUI
 
 struct FourDayView: View {
     let forecasts: [WeatherDataModel]
-    @Binding var selectedIndex: Int
+    @Binding var selectedIndex: Int?
 
     // Layout constants
     private let cornerRadius: CGFloat = 14
     private let cardWidth: CGFloat = 80
 
     var body: some View {
-        GeometryReader { geo in
-            let spacing: CGFloat = 12
-            let count = forecasts.count
-            let totalWidth = CGFloat(max(count, 0)) * cardWidth + CGFloat(max(count - 1, 0)) * spacing
-
-            Group {
-                if forecasts.isEmpty {
-                    emptyState
-                } else if totalWidth <= geo.size.width {
-                    // Content fits: center it without scrolling
-                    HStack(spacing: spacing) {
-                        ForEach(Array(forecasts.enumerated()), id: \.offset) { index, item in
-                            dayCard(for: item, isSelected: selectedIndex == index)
-                                .onTapGesture { select(index: index) }
-                                .accessibilityElement(children: .ignore)
-                                .accessibilityLabel(accessibilityLabel(for: item, index: index))
-                                .accessibilityAddTraits(selectedIndex == index ? [.isSelected, .isButton] : [.isButton])
-                                .accessibilityAction(named: Text("Select")) { select(index: index) }
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 8)
-                } else {
-                    // Too wide: allow horizontal scrolling
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: spacing) {
-                            ForEach(Array(forecasts.enumerated()), id: \.offset) { index, item in
-                                dayCard(for: item, isSelected: selectedIndex == index)
-                                    .onTapGesture { select(index: index) }
-                                    .accessibilityElement(children: .ignore)
-                                    .accessibilityLabel(accessibilityLabel(for: item, index: index))
-                                    .accessibilityAddTraits(selectedIndex == index ? [.isSelected, .isButton] : [.isButton])
-                                    .accessibilityAction(named: Text("Select")) { select(index: index) }
+        if forecasts.isEmpty {
+            emptyState
+        } else {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(Array(forecasts.enumerated()), id: \.offset) { index, item in
+                        dayCard(for: item, isSelected: selectedIndex == index)
+                            .onTapGesture {
+                                select(index: index)
                             }
-                        }
-                        .padding(.vertical, 8)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel(accessibilityLabel(for: item, index: index))
+                            .accessibilityAddTraits(selectedIndex == index ? [.isSelected, .isButton] : [.isButton])
+                            .accessibilityAction(named: Text("Select")) {
+                                select(index: index)
+                            }
                     }
                 }
+                .padding(.vertical, 8)
             }
-            .frame(width: geo.size.width, height: geo.size.height, alignment: .bottom)
         }
-        .frame(height: 120, alignment: .bottom)
-        .padding(.bottom, 20)
     }
 
     private var emptyState: some View {
@@ -123,7 +101,7 @@ struct FourDayView: View {
 }
 
 #Preview {
-    @Previewable @State var selected: Int = 0
+    @Previewable @State var selected: Int? = 0
     FourDayView(
         forecasts: [
             WeatherDataModel(day: "Mon", temperature: "28", icon: "cloud.fill", isFahrenheit: false),
