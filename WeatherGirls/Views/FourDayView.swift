@@ -1,8 +1,9 @@
 import SwiftUI
 
-struct FourDayView: View {
+struct WeekView: View {
     let forecasts: [WeatherDataModel]
     @Binding var selectedIndex: Int
+    let isFahrenheit: Bool
 
     // Layout constants
     private let cornerRadius: CGFloat = 14
@@ -10,18 +11,19 @@ struct FourDayView: View {
 
     var body: some View {
         GeometryReader { geo in
+            let cappedForecasts = Array(forecasts.prefix(7))
             let spacing: CGFloat = 12
-            let count = forecasts.count
+            let count = cappedForecasts.count
             let totalWidth = CGFloat(max(count, 0)) * cardWidth + CGFloat(max(count - 1, 0)) * spacing
 
             Group {
                 if forecasts.isEmpty {
-                    emptyState
+                    EmptyState()
                 } else if totalWidth <= geo.size.width {
                     // Content fits: center it without scrolling
                     HStack(spacing: spacing) {
-                        ForEach(Array(forecasts.enumerated()), id: \.offset) { index, item in
-                            dayCard(for: item, isSelected: selectedIndex == index)
+                        ForEach(Array(cappedForecasts.enumerated()), id: \.offset) { index, item in
+                            ForecastView(day: item.day, icon: item.sfSymbolName, temperature: convertedTemperatureString(item: item), isFahrenheit: isFahrenheit, isSelected: selectedIndex == index)
                                 .onTapGesture { select(index: index) }
                                 .accessibilityElement(children: .ignore)
                                 .accessibilityLabel(accessibilityLabel(for: item, index: index))
@@ -31,12 +33,13 @@ struct FourDayView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 8)
+                    .padding(.horizontal, 20)
                 } else {
                     // Too wide: allow horizontal scrolling
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: spacing) {
-                            ForEach(Array(forecasts.enumerated()), id: \.offset) { index, item in
-                                dayCard(for: item, isSelected: selectedIndex == index)
+                            ForEach(Array(cappedForecasts.enumerated()), id: \.offset) { index, item in
+                                ForecastView(day: item.day, icon: item.sfSymbolName, temperature: convertedTemperatureString(item: item), isFahrenheit: isFahrenheit, isSelected: selectedIndex == index)
                                     .onTapGesture { select(index: index) }
                                     .accessibilityElement(children: .ignore)
                                     .accessibilityLabel(accessibilityLabel(for: item, index: index))
@@ -44,7 +47,7 @@ struct FourDayView: View {
                                     .accessibilityAction(named: Text("Select")) { select(index: index) }
                             }
                         }
-                        .padding(.vertical, 8)
+                        .padding(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
                     }
                 }
             }
@@ -52,47 +55,6 @@ struct FourDayView: View {
         }
         .frame(height: 120, alignment: .bottom)
         .padding(.bottom, 20)
-    }
-
-    private var emptyState: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "cloud.slash")
-            Text("No forecast data")
-        }
-        .foregroundStyle(.secondary)
-        .frame(maxWidth: .infinity, alignment: .center)
-        .padding(.vertical, 12)
-        .accessibilityLabel("No forecast data available")
-    }
-
-    private func dayCard(for item: WeatherDataModel, isSelected: Bool) -> some View {
-        VStack(spacing: 8) {
-            Text(item.day)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-            Image(systemName: item.icon)
-                .symbolRenderingMode(.hierarchical)
-                .font(.title2)
-                .frame(height: 24)
-                .foregroundStyle(isSelected ? .primary : .secondary)
-                .contentTransition(.symbolEffect)
-            Text(formattedTemp(item))
-                .font(.headline)
-                .monospacedDigit()
-        }
-        .padding(.vertical, 12)
-        .frame(width: cardWidth)
-        .background(
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(isSelected ? Color.accentColor.opacity(0.15) : Color.secondary.opacity(0.08))
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.2), lineWidth: isSelected ? 1.5 : 1)
-                )
-        )
-        .scaleEffect(isSelected ? 1.03 : 1.0)
-        .animation(.easeInOut(duration: 0.2), value: isSelected)
     }
 
     private func formattedTemp(_ item: WeatherDataModel) -> String {
@@ -103,6 +65,20 @@ struct FourDayView: View {
             return "\(value)°C"
         }
     }
+    
+    private func convertedTemperatureString(item: WeatherDataModel) -> String {
+        guard let value = Double(item.temperature) else { return item.temperature }
+        if item.isFahrenheit == isFahrenheit { return String(Int(round(value))) }
+        if isFahrenheit {
+            // C -> F
+            let f = value * 9.0 / 5.0 + 32.0
+            return String(Int(round(f)))
+        } else {
+            // F -> C
+            let c = (value - 32.0) * 5.0 / 9.0
+            return String(Int(round(c)))
+        }
+    }
 
     private func accessibilityLabel(for item: WeatherDataModel, index: Int) -> Text {
         let temp = formattedTemp(item)
@@ -111,7 +87,7 @@ struct FourDayView: View {
     }
 
     private func select(index: Int) {
-        guard index >= 0 && index < forecasts.count else { return }
+        guard index >= 0 && index < min(forecasts.count, 7) else { return }
         if selectedIndex != index {
             let generator = UISelectionFeedbackGenerator()
             generator.selectionChanged()
@@ -124,14 +100,16 @@ struct FourDayView: View {
 
 #Preview {
     @Previewable @State var selected: Int = 0
-    FourDayView(
+    WeekView(
         forecasts: [
-            WeatherDataModel(day: "Mon", temperature: "28", icon: "cloud.fill", isFahrenheit: false),
-            WeatherDataModel(day: "Tue", temperature: "30", icon: "cloud.rain.fill", isFahrenheit: false),
-            WeatherDataModel(day: "Wed", temperature: "26", icon: "sun.max.fill", isFahrenheit: false),
-            WeatherDataModel(day: "Thu", temperature: "27", icon: "cloud.fill", isFahrenheit: false)
+            WeatherDataModel(day: "Mon", temperature: "28", openWeatherIconCode: "03d", weatherID: 800, isFahrenheit: false, condition: "Cloudy"),
+            WeatherDataModel(day: "Tue", temperature: "30", openWeatherIconCode: "10d", weatherID: 200, isFahrenheit: false, condition: "Cloudy with Rain"),
+            WeatherDataModel(day: "Wed", temperature: "26", openWeatherIconCode: "01d", weatherID: 300, isFahrenheit: false, condition: "Sunny"),
+            WeatherDataModel(day: "Thu", temperature: "27", openWeatherIconCode: "03d", weatherID: 400, isFahrenheit: false, condition: "Cloudy"),
+            WeatherDataModel(day: "Fri", temperature: "27", openWeatherIconCode: "03d", weatherID: 400, isFahrenheit: false, condition: "Cloudy")
         ],
-        selectedIndex: $selected
+        selectedIndex: $selected,
+        isFahrenheit: false
     )
     .padding()
 }

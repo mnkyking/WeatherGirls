@@ -8,11 +8,14 @@
 import SwiftUI
 
 struct Condition: View {
+    let condition: String?
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Text(condition ?? "")
+            .weatherHUDStyle()
     }
 }
 
 #Preview {
-    Condition()
+    Condition(condition: "cloudy")
 }
+

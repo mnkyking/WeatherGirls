@@ -42,6 +42,8 @@ struct ForecastView: View {
     }
 
     private var formattedTemp: String {
+        // If incoming temperature already includes a degree symbol, respect it
+        if temperature.contains("°") { return temperature }
         if isFahrenheit {
             return "\(temperature)°F"
         } else {

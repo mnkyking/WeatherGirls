@@ -80,6 +80,7 @@ import Combine
                 day: dayLabel,
                 temperature: String(Int(round(maxTemp))),
                 openWeatherIconCode: iconCode,
+                weatherID: rep.weather.first?.id,
                 isFahrenheit: isFahrenheit,
                 condition: condition
             )
@@ -111,6 +112,30 @@ import Combine
             return "cloud.fog.fill"
         default:
             return "cloud"
+        }
+    }
+
+    func backgroundAssetName(for weatherID: Int?) -> String {
+        guard let id = weatherID else { return "default_clear" }
+        switch id {
+        case 200...299: // Thunderstorm (2xx)
+            return "default_thunderstorm"
+        case 300...399: // Drizzle (3xx)
+            return "default_drizzle"
+        case 500...599: // Rain (5xx)
+            return "default_rain"
+        case 600...699: // Snow (6xx)
+            return "default_snow"
+        case 700...799: // Atmosphere (7xx) - mist, smoke, haze, fog
+            return "default_fog"
+        case 800: // Clear
+            return "default_clear"
+        case 801...804: // Clouds
+            // 801/802 could be partly cloudy, 803/804 cloudy/overcast
+            if id == 801 || id == 802 { return "default_partly_cloudy" }
+            return "default_cloudy"
+        default:
+            return "default_clear"
         }
     }
 }

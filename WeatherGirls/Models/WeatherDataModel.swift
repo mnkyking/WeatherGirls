@@ -7,13 +7,31 @@
 
 import Foundation
 
-struct WeatherDataModel: Identifiable {
+struct WeatherDataModel: Identifiable, Codable {
     let id: UUID = UUID()
     let day: String
     let temperature: String
-    let icon: String
+    let openWeatherIconCode: String?
+    let weatherID: Int?
     let isFahrenheit: Bool
+    let condition: String
+    
+    var sfSymbolName: String {
+        ForecastViewModel.mapIcon(from: openWeatherIconCode)
+    }
+    
     var displayTemperature: String {
-        return isFahrenheit ? temperature : "\(Int(Double(temperature)! * 9/5 + 32))°F"
+        // If temperature string already includes units, just return it
+        if temperature.contains("°") { return temperature }
+        if let value = Double(temperature) {
+            if isFahrenheit {
+                return "\(Int(value))°F"
+            } else {
+                let f = Int((value * 9/5) + 32)
+                return "\(f)°F"
+            }
+        }
+        return temperature
     }
 }
+
