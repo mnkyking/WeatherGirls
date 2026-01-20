@@ -9,9 +9,15 @@ import SwiftUI
 import CoreData
 import CoreLocation
 import Combine
+import GoogleMobileAds
+import SpriteKit
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.appTheme) private var appTheme
+
+    private var themedColors: AppColors { appTheme.colors(for: colorScheme) }
 
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
@@ -26,29 +32,55 @@ struct ContentView: View {
         "clear",            // 800
         "partly_cloudy",    // 801-802
         "cloudy",           // 803-804
-        "rain",             // 5xx
-        "rain", //"drizzle",          // 3xx
-        "rain", //"thunderstorm",     // 2xx
+        "rain",             // 5xx // "drizzle" 3xx // "thunderstor" 2xx
         "snow",             // 6xx
         "fog"               // 7xx
     ]
+    
     @State private var artIndex: Int = 0
     @State private var previewBackgroundAsset: String? = nil
+    @State private var effectiveWeatherID: Int = 100
 
     var body: some View {
         ZStack {
-            let selectedWeatherID = (viewModel.forecasts[safe: viewModel.selectedIndex] ?? viewModel.forecasts.first)?.weatherID
+            let selectedWeatherID = viewModel.selectedWeatherID
             let bgAssetBase = previewBackgroundAsset ?? viewModel.backgroundAssetName(for: selectedWeatherID)
+            // let isNight = WeatherEffectMapping.isNight()
+            TimeOfDay()
+            // StarfieldBackgroundView(isNight: isNight)
+            WeatherParticlesView(
+                weatherID: effectiveWeatherID,
+                intensity: .background
+            )
+            .id(effectiveWeatherID)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+            
             BackgroundImage(baseName: bgAssetBase)
-                .ignoresSafeArea()
+                .id(bgAssetBase)
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
+                .animation(.default, value: bgAssetBase)
             
-            VStack(alignment: .leading) {
-                UnitToggleView(isFahrenheit: $viewModel.isFahrenheit)
-                    .padding()
+            WeatherParticlesView(
+                weatherID: effectiveWeatherID,
+                intensity: .foreground
+            )
+            .id(effectiveWeatherID)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+
+            VStack(alignment: .center) {
+
+                // A subtle surface to improve legibility over art
+                let adSize = currentOrientationAnchoredAdaptiveBanner(width: 375)
+                AdBannerView()
+                    .frame(width: adSize.size.width, height: adSize.size.height)
                 Spacer()
                 let selectedCondition = (viewModel.forecasts[safe: viewModel.selectedIndex] ?? viewModel.forecasts.first)?.condition
+                
+                WeekView(forecasts: viewModel.forecasts, selectedIndex: $viewModel.selectedIndex, isFahrenheit: viewModel.isFahrenheit)
+                
                 HStack {
                     Location(
                         currentCity: Binding(
@@ -66,21 +98,16 @@ struct ContentView: View {
                     Spacer()
                     Condition(condition: selectedCondition ?? "")
                 }
-                .padding()
+                .foregroundStyle(themedColors.primaryText)
+                .padding(.horizontal)
                 
-                WeekView(forecasts: viewModel.forecasts, selectedIndex: $viewModel.selectedIndex, isFahrenheit: viewModel.isFahrenheit)
+                UnitToggleView(isFahrenheit: $viewModel.isFahrenheit)
+                    .tint(themedColors.accent)
+                    .padding([.horizontal, .bottom])
             }
             .task {
                 // Request location authorization
                 locationManager.requestAuthorization()
-            }
-            .task {
-                // Initial fetch when view appears
-                if let location = locationManager.lastLocation {
-                    await viewModel.fetchWeatherForLocation(location)
-                } else {
-                    await viewModel.fetchWeatherForLasVegas()
-                }
             }
             .onReceive(locationManager.$authorizationStatus) { status in
                 Task {
@@ -104,22 +131,17 @@ struct ContentView: View {
                     }
                 }
             }
-            .onChange(of: viewModel.selectedIndex) { _ in
+            .onChange(of: viewModel.forecasts.map { $0.weatherID }) {
+                // Forecasts updated (e.g., after refresh or new location); restore API-driven background
+                previewBackgroundAsset = nil
+            }
+            .onChange(of: viewModel.selectedIndex) {
                 // User selected a different forecast day; restore API-driven background
+                print("selected index \(viewModel.selectedIndex)")
                 previewBackgroundAsset = nil
             }
         }
-        .refreshable {
-            if let location = locationManager.lastLocation {
-                await viewModel.fetchWeatherForLocation(location)
-                viewModel.currentCity = ""
-                previewBackgroundAsset = nil
-            } else {
-                await viewModel.fetchWeatherForLasVegas()
-                viewModel.currentCity = ""
-                previewBackgroundAsset = nil
-            }
-        }
+        .tint(themedColors.accentVariant)
         .contentShape(Rectangle())
         .gesture(
             DragGesture(minimumDistance: 20, coordinateSpace: .local)
@@ -135,6 +157,23 @@ struct ContentView: View {
                         decrementArtIndex()
                         previewBackgroundAsset = weatherArtAssets[artIndex]
                     }
+                    effectiveWeatherID = {
+                        if let preview = previewBackgroundAsset {
+                            // Map your asset name to a representative OpenWeather ID range
+                            switch preview {
+                            case "clear": return 800
+                            case "partly_cloudy": return 801
+                            case "cloudy": return 803
+                            case "rain": return 500
+                            case "snow": return 600
+                            case "fog": return 741
+                            default: return viewModel.selectedWeatherID ?? 100
+                            }
+                        } else {
+                            return viewModel.selectedWeatherID ?? 100
+                        }
+                    }()
+                    print("effective weather id \(effectiveWeatherID)")
                 }
         )
     }
@@ -197,4 +236,6 @@ private extension Collection {
 #Preview {
     ContentView()
         .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+        .appTheme(.vibrant)
 }
+

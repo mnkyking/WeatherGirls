@@ -14,8 +14,6 @@ final class StarfieldScene: SKScene {
     private var emitter: SKEmitterNode?
 
     override func didMove(to view: SKView) {
-        backgroundColor = .clear
-        scaleMode = .resizeFill
         createOrAttach()
         layout()
     }
@@ -28,19 +26,7 @@ final class StarfieldScene: SKScene {
                 emitter = e
                 addChild(e)
             } else {
-                let e = SKEmitterNode()
-                e.particleTexture = SKTexture(imageNamed: "star")
-                e.particleBirthRate = 40
-                e.particleLifetime = 20
-                e.particleSpeed = -10
-                e.particleAlpha = 0.8
-                e.particleAlphaRange = 0.2
-                e.particleScale = 0.6
-                e.particleScaleRange = 0.4
-                e.particleColor = .white
-                e.emissionAngle = -.pi / 2
-                emitter = e
-                addChild(e)
+                print("[WeatherScenes] Missing SKS: Starfield.sks")
             }
         }
     }
@@ -52,7 +38,12 @@ final class StarfieldScene: SKScene {
         emitter.zPosition = -10
     }
 
-    static func make() -> SKScene { StarfieldScene() }
+    static func make() -> SKScene {
+        var s = StarfieldScene()
+        s.backgroundColor = .clear
+        s.scaleMode = .resizeFill
+        return s
+    }
 }
 
 // MARK: - Rain
@@ -62,8 +53,7 @@ final class RainScene: SKScene {
     private var intensity: ParticleIntensity = .background
 
     override func didMove(to view: SKView) {
-        backgroundColor = .clear
-        scaleMode = .resizeFill
+        print("RainScene did move")
         createOrAttach()
         layout()
     }
@@ -71,26 +61,14 @@ final class RainScene: SKScene {
     override func didChangeSize(_ oldSize: CGSize) { layout() }
 
     private func createOrAttach() {
+        print("RainScene create or attach")
         if emitter == nil {
             let fileName = light ? "RainParticleLight.sks" : "RainParticle.sks"
             if let e = SKEmitterNode(fileNamed: fileName) {
                 emitter = e
                 addChild(e)
             } else {
-                let e = SKEmitterNode()
-                e.particleTexture = SKTexture(imageNamed: "raindrop")
-                e.particleBirthRate = light ? 120 : 400
-                e.particleLifetime = 2.5
-                e.particleSpeed = -600
-                e.particleSpeedRange = 120
-                e.particleAlpha = 0.8
-                e.particleScale = 0.15
-                e.particleScaleRange = 0.05
-                e.emissionAngle = -.pi / 2
-                e.particleColorBlendFactor = 1.0
-                e.particleColor = .white
-                emitter = e
-                addChild(e)
+                print("[WeatherScenes] Missing SKS: \(fileName)")
             }
         }
         applyIntensity()
@@ -113,6 +91,8 @@ final class RainScene: SKScene {
         let s = RainScene()
         s.light = light
         s.intensity = intensity
+        s.backgroundColor = .clear
+        s.scaleMode = .resizeFill
         return s
     }
 }
@@ -123,8 +103,6 @@ final class SnowScene: SKScene {
     private var intensity: ParticleIntensity = .background
 
     override func didMove(to view: SKView) {
-        backgroundColor = .clear
-        scaleMode = .resizeFill
         createOrAttach()
         layout()
     }
@@ -137,20 +115,7 @@ final class SnowScene: SKScene {
                 emitter = e
                 addChild(e)
             } else {
-                let e = SKEmitterNode()
-                e.particleTexture = SKTexture(imageNamed: "snowflake")
-                e.particleBirthRate = 120
-                e.particleLifetime = 8
-                e.particleSpeed = -80
-                e.particleSpeedRange = 40
-                e.particleAlpha = 0.9
-                e.particleScale = 0.2
-                e.particleScaleRange = 0.15
-                e.emissionAngle = -.pi / 2
-                e.particleColor = .white
-                e.xAcceleration = 10
-                emitter = e
-                addChild(e)
+                print("[WeatherScenes] Missing SKS: SnowParticle.sks")
             }
         }
         applyIntensity()
@@ -172,6 +137,8 @@ final class SnowScene: SKScene {
     static func make(intensity: ParticleIntensity) -> SKScene {
         let s = SnowScene()
         s.intensity = intensity
+        s.backgroundColor = .clear
+        s.scaleMode = .resizeFill
         return s
     }
 }
@@ -182,8 +149,6 @@ final class FogScene: SKScene {
     private var intensity: ParticleIntensity = .background
 
     override func didMove(to view: SKView) {
-        backgroundColor = .clear
-        scaleMode = .resizeFill
         createOrAttach()
         layout()
     }
@@ -196,20 +161,7 @@ final class FogScene: SKScene {
                 emitter = e
                 addChild(e)
             } else {
-                let e = SKEmitterNode()
-                e.particleTexture = SKTexture(imageNamed: "fog") // a wide soft texture
-                e.particleBirthRate = 6
-                e.particleLifetime = 20
-                e.particleSpeed = -10
-                e.particleAlpha = 0.25
-                e.particleAlphaRange = 0.1
-                e.particleScale = 3.0
-                e.particleScaleRange = 1.0
-                e.emissionAngle = -.pi / 2
-                e.particleColorBlendFactor = 1.0
-                e.particleColor = .white
-                emitter = e
-                addChild(e)
+                print("[WeatherScenes] Missing SKS: FogParticle.sks")
             }
         }
         applyIntensity()
@@ -231,6 +183,8 @@ final class FogScene: SKScene {
     static func make(intensity: ParticleIntensity) -> SKScene {
         let s = FogScene()
         s.intensity = intensity
+        s.backgroundColor = .clear
+        s.scaleMode = .resizeFill
         return s
     }
 }
@@ -241,8 +195,6 @@ final class LeavesScene: SKScene {
     private var intensity: ParticleIntensity = .background
 
     override func didMove(to view: SKView) {
-        backgroundColor = .clear
-        scaleMode = .resizeFill
         createOrAttach()
         layout()
     }
@@ -255,23 +207,7 @@ final class LeavesScene: SKScene {
                 emitter = e
                 addChild(e)
             } else {
-                let e = SKEmitterNode()
-                e.particleTexture = SKTexture(imageNamed: "leaf")
-                e.particleBirthRate = 12
-                e.particleLifetime = 10
-                e.particleSpeed = -80
-                e.particleSpeedRange = 60
-                e.particleAlpha = 0.9
-                e.particleScale = 0.4
-                e.particleScaleRange = 0.3
-                e.emissionAngle = -.pi / 2
-                e.particleRotation = .pi / 2
-                e.particleRotationRange = .pi
-                e.particleColorBlendFactor = 1.0
-                e.particleColor = .white
-                e.xAcceleration = 25
-                emitter = e
-                addChild(e)
+                print("[WeatherScenes] Missing SKS: LeavesParticle.sks")
             }
         }
         applyIntensity()
@@ -293,6 +229,8 @@ final class LeavesScene: SKScene {
     static func make(intensity: ParticleIntensity) -> SKScene {
         let s = LeavesScene()
         s.intensity = intensity
+        s.backgroundColor = .clear
+        s.scaleMode = .resizeFill
         return s
     }
 }
@@ -304,8 +242,6 @@ final class ThunderstormScene: SKScene {
     private var intensity: ParticleIntensity = .background
 
     override func didMove(to view: SKView) {
-        backgroundColor = .clear
-        scaleMode = .resizeFill
         createOrAttach()
         layout()
         scheduleLightning()
@@ -319,19 +255,7 @@ final class ThunderstormScene: SKScene {
                 rainEmitter = e
                 addChild(e)
             } else {
-                let e = SKEmitterNode()
-                e.particleTexture = SKTexture(imageNamed: "raindrop")
-                e.particleBirthRate = 450
-                e.particleLifetime = 2.5
-                e.particleSpeed = -650
-                e.particleSpeedRange = 150
-                e.particleAlpha = 0.85
-                e.particleScale = 0.15
-                e.particleScaleRange = 0.05
-                e.emissionAngle = -.pi / 2
-                e.particleColor = .white
-                rainEmitter = e
-                addChild(e)
+                print("[WeatherScenes] Missing SKS: RainParticle.sks")
             }
             applyIntensity()
         }
@@ -383,6 +307,8 @@ final class ThunderstormScene: SKScene {
     static func make(intensity: ParticleIntensity) -> SKScene {
         let s = ThunderstormScene()
         s.intensity = intensity
+        s.backgroundColor = .clear
+        s.scaleMode = .resizeFill
         return s
     }
 }

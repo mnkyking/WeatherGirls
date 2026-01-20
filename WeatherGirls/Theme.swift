@@ -31,8 +31,8 @@ extension AppTheme {
         light: AppColors(
             background: Color(red: 0.97, green: 0.98, blue: 1.00),            // Soft sky tint
             surface: Color.white.opacity(0.85),                               // Translucent card over art
-            primaryText: Color(red: 0.08, green: 0.12, blue: 0.18),           // Deep navy for contrast
-            secondaryText: Color(red: 0.28, green: 0.36, blue: 0.48),         // Muted blue-gray
+            primaryText: Color("Primary", bundle: Bundle.main),                                  // From asset: primary
+            secondaryText: Color("Secondary", bundle: Bundle.main),                              // From asset: secondary
             accent: Color(red: 0.05, green: 0.56, blue: 0.98),                // Bright sky blue
             accentVariant: Color(red: 0.00, green: 0.72, blue: 0.83),         // Aqua/teal
             warning: Color(red: 1.00, green: 0.55, blue: 0.20),               // Warm orange
@@ -42,8 +42,8 @@ extension AppTheme {
         dark: AppColors(
             background: Color(red: 0.05, green: 0.08, blue: 0.14),            // Deep indigo/space
             surface: Color(red: 0.11, green: 0.14, blue: 0.20).opacity(0.75), // Translucent card
-            primaryText: Color.white,                                         // High contrast text
-            secondaryText: Color(red: 0.76, green: 0.82, blue: 0.92),         // Cool light blue
+            primaryText: Color("Primary", bundle: Bundle.main),                                  // From asset: primary
+            secondaryText: Color("Secondary", bundle: Bundle.main),                              // From asset: secondary
             accent: Color(red: 0.28, green: 0.68, blue: 1.00),                // Electric blue
             accentVariant: Color(red: 0.18, green: 0.85, blue: 0.88),         // Cyan/teal
             warning: Color(red: 1.00, green: 0.60, blue: 0.35),               // Softer orange
@@ -87,3 +87,4 @@ struct ThemedColors {
         self.colors = theme.colors(for: scheme)
     }
 }
+

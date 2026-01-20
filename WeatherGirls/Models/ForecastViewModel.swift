@@ -4,10 +4,15 @@ import Combine
 
 @MainActor class ForecastViewModel: ObservableObject {
     @Published var forecasts: [WeatherDataModel] = []
-    @Published var selectedIndex: Int = 0
+    @Published var selectedIndex: Int = 0 {
+        didSet {
+            updateSelectedWeatherID()
+        }
+    }
     @Published var isFahrenheit: Bool = false
     @Published var currentCity: String = ""
     @Published var isLoading: Bool = false
+    @Published var selectedWeatherID: Int? = nil
 
     private let weatherService: WeatherService? = try? WeatherService()
 
@@ -20,6 +25,8 @@ import Combine
             let units: OpenWeatherCurrentRequest.Units = isFahrenheit ? .imperial : .metric
             let response = try await service.fetchFiveDayForecast(city: "Las Vegas", countryCode: "US", units: units)
             forecasts = decodeToForecastModels(from: response)
+            selectedIndex = 0
+            updateSelectedWeatherID()
             currentCity = response.city.name
         } catch {
             print("Weather fetch error: \(error)")
@@ -35,6 +42,8 @@ import Combine
             let units: OpenWeatherCurrentRequest.Units = isFahrenheit ? .imperial : .metric
             let response = try await service.fetchFiveDayForecast(city: cityName, countryCode: nil, units: units)
             forecasts = decodeToForecastModels(from: response)
+            selectedIndex = 0
+            updateSelectedWeatherID()
             currentCity = response.city.name
         } catch {
             print("Weather fetch error: \(error)")
@@ -50,6 +59,8 @@ import Combine
             let units: OpenWeatherCurrentRequest.Units = isFahrenheit ? .imperial : .metric
             let response = try await service.fetchFiveDayForecast(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude, units: units)
             forecasts = decodeToForecastModels(from: response)
+            selectedIndex = 0
+            updateSelectedWeatherID()
             currentCity = response.city.name
         } catch {
             print("Weather fetch error: \(error)")
@@ -116,26 +127,32 @@ import Combine
     }
 
     func backgroundAssetName(for weatherID: Int?) -> String {
-        guard let id = weatherID else { return "default_clear" }
+        guard let id = weatherID else { return "clear" }
+        print("HLS: backgroundAssetName(for: \(id)")
         switch id {
         case 200...299: // Thunderstorm (2xx)
-            return "default_thunderstorm"
+            return "thunderstorm"
         case 300...399: // Drizzle (3xx)
-            return "default_drizzle"
+            return "drizzle"
         case 500...599: // Rain (5xx)
-            return "default_rain"
+            return "rain"
         case 600...699: // Snow (6xx)
-            return "default_snow"
+            return "snow"
         case 700...799: // Atmosphere (7xx) - mist, smoke, haze, fog
-            return "default_fog"
+            return "fog"
         case 800: // Clear
-            return "default_clear"
+            return "clear"
         case 801...804: // Clouds
             // 801/802 could be partly cloudy, 803/804 cloudy/overcast
-            if id == 801 || id == 802 { return "default_partly_cloudy" }
-            return "default_cloudy"
+            if id == 801 || id == 802 { return "partly_cloudy" }
+            return "cloudy"
         default:
             return "default_clear"
         }
     }
+
+    private func weatherIDForCurrentSelection() -> Int? {
+        return (forecasts.indices.contains(selectedIndex) ? forecasts[selectedIndex] : forecasts.first)?.weatherID
+    }
+    private func updateSelectedWeatherID() { selectedWeatherID = weatherIDForCurrentSelection() }
 }

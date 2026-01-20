@@ -8,6 +8,7 @@
 import SwiftUI
 import FirebaseRemoteConfig
 import Combine
+import FirebaseStorage
 
 fileprivate struct ArtPrefixConfig {
     static let key = "artPrefix"
@@ -16,11 +17,11 @@ fileprivate struct ArtPrefixConfig {
 
 fileprivate final class RemoteConfigManager: ObservableObject {
     static let shared = RemoteConfigManager()
-
+    
     private let remoteConfig: RemoteConfig
-
+    
     @Published var artPrefix: String = ArtPrefixConfig.defaultValue
-
+    
     private init() {
         self.remoteConfig = RemoteConfig.remoteConfig()
         let settings = RemoteConfigSettings()
@@ -32,12 +33,11 @@ fileprivate final class RemoteConfigManager: ObservableObject {
         self.artPrefix = remoteConfig.configValue(forKey: ArtPrefixConfig.key).stringValue
         fetchAndActivate()
     }
-
+    
     func fetchAndActivate() {
         remoteConfig.fetchAndActivate { [weak self] status, error in
             guard let self else { return }
             let value = self.remoteConfig.configValue(forKey: ArtPrefixConfig.key).stringValue
-            print("value: \(value)")
             if !value.isEmpty {
                 DispatchQueue.main.async {
                     self.artPrefix = value
@@ -48,60 +48,100 @@ fileprivate final class RemoteConfigManager: ObservableObject {
 }
 
 struct BackgroundImage: View {
+    // Get a reference to the storage service using the default Firebase App
     let baseName: String
-    
+    private let storage = Storage.storage()
+    @State private var downloadURL: URL?
     @StateObject private var rcManager = RemoteConfigManager.shared
+    
+    @State private var status: String = "Idle"
+    @State private var imageData: Data?
+    @State private var isLoading: Bool = false
+    @State private var errorMessage: String?
     
     private func prefixed(_ name: String) -> String { rcManager.artPrefix + name }
     
-    // MARK: Remote image URL helper
-    // NOTE: Replace <your-bucket> with your actual Firebase Storage bucket name.
-    private func remoteURLString(for name: String) -> String {
-        // Expecting files named like: artPrefix_weatherCondition.jpg in a public bucket path
-        // If you use a different extension or path, adjust here.
-        let fileName = baseName + ".png"
-        print("filename: \(fileName)")
-        // Example: https://firebasestorage.googleapis.com/v0/b/<your-bucket>/o/backgrounds%2F<fileName>?alt=media
-        // Store just the path segment in Remote Config if preferred; for now, assume a fixed folder "backgrounds".
-        let encoded = ("backgrounds/" + fileName).addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? fileName
-        return "https://firebasestorage.googleapis.com/v0/b/weather-girls-2.firebasestorage.app/o/\(encoded)?alt=media"
+    /// Computed Firebase storage reference
+    private var imageRef: StorageReference {
+        let storageRef = storage.reference()
+        let fileName = prefixed(baseName) + ".png"
+        let ref = storageRef.child("backgrounds/\(fileName)")
+        
+        //print("HLS: storage ref: \(storageRef.fullPath)")
+        //print("HLS: imageRef: \(ref.fullPath)")
+        //print("HLS: bucket name: \(ref.bucket)")
+        
+        return ref
+    }
+    
+    private func loadDownloadURL() async {
+        do {
+            isLoading = true
+            status = "Fetching URL"
+            let url = try await imageRef.downloadURL()
+            downloadURL = url
+        } catch {
+            status = "Failure"
+            errorMessage = "Failed to fetch download URL: \(error.localizedDescription)"
+            isLoading = false
+        }
+    }
+    
+    private func downloadImageData() async {
+        guard let url = downloadURL else { return }
+        do {
+            status = "Downloading"
+            let (data, response) = try await URLSession.shared.data(from: url)
+            if let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode), !data.isEmpty {
+                imageData = data
+                status = "Success"
+            } else {
+                status = "Failure"
+                errorMessage = "Unexpected response or empty data"
+            }
+        } catch {
+            status = "Failure"
+            errorMessage = "Failed to download image data: \(error.localizedDescription)"
+        }
+        isLoading = false
     }
     
     var body: some View {
-        AsyncImage(url: URL(string: remoteURLString(for: baseName)), transaction: Transaction(animation: .easeInOut)) { phase in
-            switch phase {
-            case .empty:
-                Color.clear
-                    .overlay(
-                        Image(baseName)
-                            .resizable()
-                    )
-                    .onAppear {
-                        print("AsyncImage phase: .empty (loading started) for", remoteURLString(for: baseName))
-                    }
-            case .success(let image):
-                image
+        ZStack {
+            if let data = imageData, let uiImage = UIImage(data: data) {
+                Image(uiImage: uiImage)
                     .resizable()
-                    .onAppear {
-                        print("AsyncImage phase: .success (remote image loaded successfully) for", remoteURLString(for: baseName))
-                    }
-            case .failure(let error):
-                Image(baseName)
-                    .resizable()
-                    .onAppear {
-                        print("AsyncImage phase: .failure ->", error.localizedDescription, "for", remoteURLString(for: baseName))
-                    }
-            @unknown default:
-                Image(baseName)
-                    .resizable()
-                    .onAppear {
-                        print("AsyncImage phase: @unknown default for", remoteURLString(for: baseName))
-                    }
+                    .scaledToFit()
+            } else {
+                Color.clear.ignoresSafeArea()
             }
+            // Loading overlay
+            if isLoading {
+                Color.black.opacity(0.2).ignoresSafeArea()
+                ProgressView(status == "Fetching URL" ? "Fetching…" : "Downloading…")
+                    .tint(.white)
+                    .padding(20)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            } else if imageData == nil {
+                // Placeholder when not loading and no image yet
+                Image(systemName: "photo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxHeight: 120)
+                    .opacity(0.3)
+            }
+        }
+        .allowsHitTesting(false)
+        .task {
+            // Sequentially fetch URL then data
+            imageData = nil
+            errorMessage = nil
+            await loadDownloadURL()
+            await downloadImageData()
         }
     }
 }
 
 #Preview {
-    BackgroundImage(baseName: "default_")
+    BackgroundImage(baseName: "clear")
 }

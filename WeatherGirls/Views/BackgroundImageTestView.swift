@@ -10,10 +10,11 @@ struct BackgroundImageTestView: View {
     @State private var imageData: Data?
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
-
+    
+    private func prefixed(_ name: String) -> String { "default_" + name }
     private var imageRef: StorageReference {
         let storageRef = storage.reference()
-        let fileName = baseName + ".png"
+        let fileName = prefixed(baseName) + ".png"
         let ref = storageRef.child("backgrounds/\(fileName)")
         return ref
     }
@@ -143,5 +144,5 @@ struct BackgroundImageTestView: View {
 
 #Preview {
     // Provide a baseName that exists in your Firebase Storage under backgrounds/<baseName>.png
-    BackgroundImageTestView(baseName: "default_")
+    BackgroundImageTestView(baseName: "clear")
 }

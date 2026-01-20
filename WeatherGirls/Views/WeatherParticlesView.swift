@@ -59,37 +59,20 @@ struct WeatherEffectMapping {
 
 // MARK: - SwiftUI Wrappers
 
-struct WeatherParticlesBackgroundView: View {
-    let weatherID: Int?
-    let previewOverride: String?
-
-    var body: some View {
-        SpriteView(scene: scene(), options: [.allowsTransparency])
-            .ignoresSafeArea()
-            .background(Color.clear)
-            .accessibilityHidden(true)
-    }
-
-    private func scene() -> SKScene {
-        let kind = WeatherEffectMapping.effect(forPreviewAsset: previewOverride) ?? WeatherEffectMapping.effect(for: weatherID)
-        return makeScene(kind: kind, intensity: .background, isForeground: false)
-    }
-}
-
 struct WeatherParticlesView: View {
     let weatherID: Int?
-    let previewOverride: String?
+    let intensity: ParticleIntensity?
 
     var body: some View {
         SpriteView(scene: scene(), options: [.allowsTransparency])
             .ignoresSafeArea()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .background(Color.clear)
-            .accessibilityHidden(true)
     }
 
     private func scene() -> SKScene {
-        let kind = WeatherEffectMapping.effect(forPreviewAsset: previewOverride) ?? WeatherEffectMapping.effect(for: weatherID)
-        return makeScene(kind: kind, intensity: .foreground, isForeground: true)
+        let kind = WeatherEffectMapping.effect(for: weatherID)
+        return makeScene(kind: kind, intensity: intensity ?? .foreground)
     }
 }
 
@@ -101,6 +84,7 @@ struct StarfieldBackgroundView: View {
             if isNight {
                 SpriteView(scene: StarfieldScene.make(), options: [.allowsTransparency])
                     .ignoresSafeArea()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                     .background(Color.clear)
             }
         }
@@ -115,7 +99,7 @@ enum ParticleIntensity {
     case foreground // sparse overlay
 }
 
-private func makeScene(kind: WeatherEffectKind, intensity: ParticleIntensity, isForeground: Bool) -> SKScene {
+private func makeScene(kind: WeatherEffectKind, intensity: ParticleIntensity) -> SKScene {
     switch kind {
     case .none:
         return EmptyWeatherScene.make()
@@ -148,4 +132,76 @@ final class EmptyWeatherScene: SKScene {
         s.scaleMode = .resizeFill
         return s
     }
+}
+
+// - MARK: Previews
+
+#Preview("Empty Scene") {
+    SpriteView(scene: EmptyWeatherScene.make(), options: [.allowsTransparency])
+        .ignoresSafeArea()
+        .background(Color.clear)
+}
+
+#Preview("Rain - Light (Foreground)") {
+    let scene = RainScene.make(light: true, intensity: .foreground)
+    if let skScene = scene as? SKScene {
+        skScene.scaleMode = .resizeFill
+    }
+    return SpriteView(scene: scene, options: [.allowsTransparency])
+        .ignoresSafeArea()
+        .background(Color.clear)
+}
+
+#Preview("Rain - Heavy (Background)") {
+    let scene = RainScene.make(light: false, intensity: .background)
+    if let skScene = scene as? SKScene {
+        skScene.scaleMode = .resizeFill
+    }
+    return SpriteView(scene: scene, options: [.allowsTransparency])
+        .ignoresSafeArea()
+        .background(Color.clear)
+}
+
+#Preview("Snow") {
+    let scene = SnowScene.make(intensity: .background)
+    if let skScene = scene as? SKScene {
+        skScene.scaleMode = .resizeFill
+    }
+    return SpriteView(scene: scene, options: [.allowsTransparency])
+}
+
+#Preview("Fog") {
+    let scene = FogScene.make(intensity: .background)
+    if let skScene = scene as? SKScene {
+        skScene.scaleMode = .resizeFill
+    }
+    return SpriteView(scene: scene, options: [.allowsTransparency])
+        .ignoresSafeArea()
+        .background(Color.clear)
+}
+
+#Preview("Leaves") {
+    let scene = LeavesScene.make(intensity: .background)
+    if let skScene = scene as? SKScene {
+        skScene.scaleMode = .resizeFill
+    }
+    return SpriteView(scene: scene, options: [.allowsTransparency])
+        .ignoresSafeArea()
+        .background(Color.clear)
+}
+
+#Preview("Thunderstorm") {
+    let scene = ThunderstormScene.make(intensity: .background)
+    if let skScene = scene as? SKScene {
+        skScene.scaleMode = .resizeFill
+    }
+    return SpriteView(scene: scene, options: [.allowsTransparency])
+        .ignoresSafeArea()
+        .background(Color.clear)
+}
+
+#Preview("Starfield (Night)") {
+    SpriteView(scene: StarfieldScene.make(), options: [.allowsTransparency])
+        .ignoresSafeArea()
+        .background(Color.clear)
 }
