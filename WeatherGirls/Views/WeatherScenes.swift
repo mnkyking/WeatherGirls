@@ -53,7 +53,6 @@ final class RainScene: SKScene {
     private var intensity: ParticleIntensity = .background
 
     override func didMove(to view: SKView) {
-        print("RainScene did move")
         createOrAttach()
         layout()
     }
@@ -61,7 +60,6 @@ final class RainScene: SKScene {
     override func didChangeSize(_ oldSize: CGSize) { layout() }
 
     private func createOrAttach() {
-        print("RainScene create or attach")
         if emitter == nil {
             let fileName = light ? "RainParticleLight.sks" : "RainParticle.sks"
             if let e = SKEmitterNode(fileNamed: fileName) {

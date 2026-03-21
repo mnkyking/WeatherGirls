@@ -30,7 +30,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                 @unknown default: stateString = "unknown"
                 }
                 let desc = "[MobileAds] Adapter: \(className) state=\(stateString) latency=\(adapterStatus.latency) description=\(adapterStatus.description)"
-                print(desc)
             }
         }
         return true

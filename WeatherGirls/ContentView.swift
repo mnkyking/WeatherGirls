@@ -98,11 +98,10 @@ struct ContentView: View {
                     Spacer()
                     Condition(condition: selectedCondition ?? "")
                 }
-                .foregroundStyle(themedColors.primaryText)
-                .padding(.horizontal)
+                .weatherHUDStyle(tintColor: TimeOfDay.dominantColor())
+                .padding([.horizontal])
                 
                 UnitToggleView(isFahrenheit: $viewModel.isFahrenheit)
-                    .tint(themedColors.accent)
                     .padding([.horizontal, .bottom])
             }
             .task {
@@ -134,11 +133,12 @@ struct ContentView: View {
             .onChange(of: viewModel.forecasts.map { $0.weatherID }) {
                 // Forecasts updated (e.g., after refresh or new location); restore API-driven background
                 previewBackgroundAsset = nil
+                effectiveWeatherID = viewModel.selectedWeatherID ?? 100
             }
             .onChange(of: viewModel.selectedIndex) {
                 // User selected a different forecast day; restore API-driven background
-                print("selected index \(viewModel.selectedIndex)")
                 previewBackgroundAsset = nil
+                effectiveWeatherID = viewModel.selectedWeatherID ?? 100
             }
         }
         .tint(themedColors.accentVariant)
@@ -173,7 +173,6 @@ struct ContentView: View {
                             return viewModel.selectedWeatherID ?? 100
                         }
                     }()
-                    print("effective weather id \(effectiveWeatherID)")
                 }
         )
     }

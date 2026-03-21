@@ -11,7 +11,6 @@ struct Condition: View {
     let condition: String?
     var body: some View {
         Text(condition ?? "")
-            .weatherHUDStyle()
     }
 }
 

@@ -23,7 +23,7 @@ struct WeekView: View {
                     // Content fits: center it without scrolling
                     HStack(spacing: spacing) {
                         ForEach(Array(cappedForecasts.enumerated()), id: \.offset) { index, item in
-                            ForecastView(day: item.day, icon: item.sfSymbolName, temperature: convertedTemperatureString(item: item), isFahrenheit: isFahrenheit, isSelected: selectedIndex == index)
+                            ForecastView(day: item.day, icon: item.sfSymbolName, temperature: convertedTemperatureString(item: item), isFahrenheit: isFahrenheit, isSelected: selectedIndex == index, tintColor: TimeOfDay.dominantColor())
                                 .onTapGesture { select(index: index) }
                                 .accessibilityElement(children: .ignore)
                                 .accessibilityLabel(accessibilityLabel(for: item, index: index))
@@ -39,7 +39,7 @@ struct WeekView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: spacing) {
                             ForEach(Array(cappedForecasts.enumerated()), id: \.offset) { index, item in
-                                ForecastView(day: item.day, icon: item.sfSymbolName, temperature: convertedTemperatureString(item: item), isFahrenheit: isFahrenheit, isSelected: selectedIndex == index)
+                                ForecastView(day: item.day, icon: item.sfSymbolName, temperature: convertedTemperatureString(item: item), isFahrenheit: isFahrenheit, isSelected: selectedIndex == index, tintColor: TimeOfDay.dominantColor())
                                     .onTapGesture { select(index: index) }
                                     .accessibilityElement(children: .ignore)
                                     .accessibilityLabel(accessibilityLabel(for: item, index: index))

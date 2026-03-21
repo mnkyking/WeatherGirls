@@ -23,7 +23,6 @@ struct Location: View {
                         .imageScale(.large)
                     Text(currentCity ?? "Use my location")
                 }
-                .weatherHUDStyle()
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Choose city or use current location")

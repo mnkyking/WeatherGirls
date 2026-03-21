@@ -23,6 +23,21 @@ struct TimeOfDay: View {
         default: return .midnight
         }
     }
+    
+    // MARK: - Public static helper for getting current time color
+    static func dominantColor() -> Color {
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 5..<9: // sunrise
+            return Color(red: 0.99, green: 0.59, blue: 0.52) // peach
+        case 9..<16: // noon
+            return Color(red: 0.62, green: 0.85, blue: 1.00) // sky blue
+        case 16..<20: // sunset
+            return Color(red: 0.99, green: 0.49, blue: 0.38) // orange
+        default: // midnight
+            return Color(red: 0.05, green: 0.10, blue: 0.22) // deep blue
+        }
+    }
 
     private var timeOfDayGradient: some View {
         let gradient: Gradient
