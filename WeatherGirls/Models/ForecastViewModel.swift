@@ -128,7 +128,7 @@ import Combine
 
     func backgroundAssetName(for weatherID: Int?) -> String {
         guard let id = weatherID else { return "clear" }
-        print("HLS: backgroundAssetName(for: \(id)")
+        // print("HLS: backgroundAssetName(for: \(id)")
         switch id {
         case 200...299: // Thunderstorm (2xx)
             return "thunderstorm"

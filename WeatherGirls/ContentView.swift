@@ -32,7 +32,8 @@ struct ContentView: View {
         "clear",            // 800
         "partly_cloudy",    // 801-802
         "cloudy",           // 803-804
-        "rain",             // 5xx // "drizzle" 3xx // "thunderstor" 2xx
+        "rain",             // 5xx // "drizzle" 3xx
+        "thunderstorm",     // 2xx
         "snow",             // 6xx
         "fog"               // 7xx
     ]
@@ -73,9 +74,11 @@ struct ContentView: View {
             VStack(alignment: .center) {
 
                 // A subtle surface to improve legibility over art
+                #if !DEBUG
                 let adSize = currentOrientationAnchoredAdaptiveBanner(width: 375)
                 AdBannerView()
                     .frame(width: adSize.size.width, height: adSize.size.height)
+                #endif
                 Spacer()
                 let selectedCondition = (viewModel.forecasts[safe: viewModel.selectedIndex] ?? viewModel.forecasts.first)?.condition
                 
@@ -165,6 +168,7 @@ struct ContentView: View {
                             case "partly_cloudy": return 801
                             case "cloudy": return 803
                             case "rain": return 500
+                            case "thunderstorm": return 200
                             case "snow": return 600
                             case "fog": return 741
                             default: return viewModel.selectedWeatherID ?? 100
