@@ -6,11 +6,18 @@ struct AdBannerView: UIViewRepresentable {
     let adUnitID: String
     let adSize: AdSize
 
-    #if DEBUG
-    private static let defaultAdUnitID = "ca-app-pub-3940256099942544/2435281174" // Test ID
-    #else
-    private static let defaultAdUnitID = "ca-app-pub-3940256099942544/2934735716" // Real ID
-    #endif
+    private static var defaultAdUnitID: String = {
+        if let id = Bundle.main.object(forInfoDictionaryKey: "BANNER_AD_UNIT_ID") as? String, !id.isEmpty {
+            return id
+        }
+        #if DEBUG
+        // Fallback to Google's iOS test banner ID in Debug if the plist key is missing
+        return "ca-app-pub-3940256099942544/2934735716"
+        #else
+        // Fallback to the provided production ID in Release to avoid serving test ads in production if misconfigured
+        return "ca-app-pub-3682591681445084/2361857222"
+        #endif
+    }()
 
     init(adUnitID: String = AdBannerView.defaultAdUnitID, adSize: AdSize = AdSizeBanner) {
         self.adUnitID = adUnitID
