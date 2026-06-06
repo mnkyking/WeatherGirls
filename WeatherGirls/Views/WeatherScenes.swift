@@ -81,7 +81,7 @@ final class RainScene: SKScene {
     private func layout() {
         guard let emitter else { return }
         emitter.position = CGPoint(x: size.width / 2, y: size.height)
-        //emitter.particlePositionRange = CGVector(dx: size.width + 40, dy: 0)
+        emitter.particlePositionRange = CGVector(dx: size.width + 80, dy: 0)
         emitter.zPosition = -1
     }
 
@@ -278,7 +278,7 @@ final class ThunderstormScene: SKScene {
     private func layout() {
         if let rainEmitter {
             rainEmitter.position = CGPoint(x: size.width / 2, y: size.height)
-            //rainEmitter.particlePositionRange = CGVector(dx: size.width + 40, dy: 0)
+            rainEmitter.particlePositionRange = CGVector(dx: size.width + 80, dy: 0)
             rainEmitter.zPosition = -1
         }
     }
@@ -310,3 +310,4 @@ final class ThunderstormScene: SKScene {
         return s
     }
 }
+
