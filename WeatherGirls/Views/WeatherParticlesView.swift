@@ -144,9 +144,7 @@ final class EmptyWeatherScene: SKScene {
 
 #Preview("Rain - Light (Foreground)") {
     let scene = RainScene.make(light: true, intensity: .foreground)
-    if let skScene = scene as? SKScene {
-        skScene.scaleMode = .resizeFill
-    }
+    scene.scaleMode = .resizeFill
     return SpriteView(scene: scene, options: [.allowsTransparency])
         .ignoresSafeArea()
         .background(Color.clear)
@@ -154,9 +152,7 @@ final class EmptyWeatherScene: SKScene {
 
 #Preview("Rain - Heavy (Background)") {
     let scene = RainScene.make(light: false, intensity: .background)
-    if let skScene = scene as? SKScene {
-        skScene.scaleMode = .resizeFill
-    }
+    scene.scaleMode = .resizeFill
     return SpriteView(scene: scene, options: [.allowsTransparency])
         .ignoresSafeArea()
         .background(Color.clear)
@@ -164,17 +160,13 @@ final class EmptyWeatherScene: SKScene {
 
 #Preview("Snow") {
     let scene = SnowScene.make(intensity: .background)
-    if let skScene = scene as? SKScene {
-        skScene.scaleMode = .resizeFill
-    }
+    scene.scaleMode = .resizeFill
     return SpriteView(scene: scene, options: [.allowsTransparency])
 }
 
 #Preview("Fog") {
     let scene = FogScene.make(intensity: .background)
-    if let skScene = scene as? SKScene {
-        skScene.scaleMode = .resizeFill
-    }
+    scene.scaleMode = .resizeFill
     return SpriteView(scene: scene, options: [.allowsTransparency])
         .ignoresSafeArea()
         .background(Color.clear)
@@ -182,9 +174,7 @@ final class EmptyWeatherScene: SKScene {
 
 #Preview("Leaves") {
     let scene = LeavesScene.make(intensity: .background)
-    if let skScene = scene as? SKScene {
-        skScene.scaleMode = .resizeFill
-    }
+    scene.scaleMode = .resizeFill
     return SpriteView(scene: scene, options: [.allowsTransparency])
         .ignoresSafeArea()
         .background(Color.clear)
@@ -192,9 +182,7 @@ final class EmptyWeatherScene: SKScene {
 
 #Preview("Thunderstorm") {
     let scene = ThunderstormScene.make(intensity: .background)
-    if let skScene = scene as? SKScene {
-        skScene.scaleMode = .resizeFill
-    }
+    scene.scaleMode = .resizeFill
     return SpriteView(scene: scene, options: [.allowsTransparency])
         .ignoresSafeArea()
         .background(Color.clear)
